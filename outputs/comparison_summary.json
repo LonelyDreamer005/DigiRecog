@@ -1,0 +1,26 @@
+{
+    "Softmax Regression (Baseline)": {
+        "parameters": 7850,
+        "test_accuracy_pct": 91.88,
+        "latency_ms_per_image": 0.632,
+        "robustness": {
+            "Original": 91.4,
+            "Noise": 85.55,
+            "Shift (2px)": 34.25,
+            "Rotation (15\u00b0)": 82.85,
+            "Blur": 91.6
+        }
+    },
+    "CNN Deep Learning (Extension)": {
+        "parameters": 225034,
+        "test_accuracy_pct": 99.01,
+        "latency_ms_per_image": 0.709,
+        "robustness": {
+            "Original": 99.2,
+            "Noise": 98.2,
+            "Shift (2px)": 84.7,
+            "Rotation (15\u00b0)": 97.3,
+            "Blur": 99.0
+        }
+    }
+}

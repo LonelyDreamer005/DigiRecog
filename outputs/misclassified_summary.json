@@ -1,0 +1,112 @@
+{
+    "total_test_samples": 10000,
+    "total_misclassified": 812,
+    "error_rate_pct": 8.12,
+    "top_high_confidence_errors": [
+        {
+            "test_index": 2044,
+            "true_label": 2,
+            "predicted_label": 7,
+            "predicted_confidence_pct": 99.89,
+            "true_label_probability_pct": 0.06
+        },
+        {
+            "test_index": 4601,
+            "true_label": 8,
+            "predicted_label": 4,
+            "predicted_confidence_pct": 99.72,
+            "true_label_probability_pct": 0.24
+        },
+        {
+            "test_index": 4615,
+            "true_label": 2,
+            "predicted_label": 4,
+            "predicted_confidence_pct": 99.67,
+            "true_label_probability_pct": 0.01
+        },
+        {
+            "test_index": 9009,
+            "true_label": 7,
+            "predicted_label": 2,
+            "predicted_confidence_pct": 99.38,
+            "true_label_probability_pct": 0.0
+        },
+        {
+            "test_index": 1530,
+            "true_label": 8,
+            "predicted_label": 7,
+            "predicted_confidence_pct": 99.35,
+            "true_label_probability_pct": 0.26
+        },
+        {
+            "test_index": 9019,
+            "true_label": 7,
+            "predicted_label": 2,
+            "predicted_confidence_pct": 99.2,
+            "true_label_probability_pct": 0.41
+        },
+        {
+            "test_index": 8,
+            "true_label": 5,
+            "predicted_label": 6,
+            "predicted_confidence_pct": 99.09,
+            "true_label_probability_pct": 0.16
+        },
+        {
+            "test_index": 9770,
+            "true_label": 5,
+            "predicted_label": 0,
+            "predicted_confidence_pct": 98.86,
+            "true_label_probability_pct": 0.09
+        },
+        {
+            "test_index": 9024,
+            "true_label": 7,
+            "predicted_label": 2,
+            "predicted_confidence_pct": 98.84,
+            "true_label_probability_pct": 0.1
+        },
+        {
+            "test_index": 4956,
+            "true_label": 8,
+            "predicted_label": 4,
+            "predicted_confidence_pct": 98.73,
+            "true_label_probability_pct": 0.31
+        },
+        {
+            "test_index": 9015,
+            "true_label": 7,
+            "predicted_label": 2,
+            "predicted_confidence_pct": 98.69,
+            "true_label_probability_pct": 1.04
+        },
+        {
+            "test_index": 2098,
+            "true_label": 2,
+            "predicted_label": 0,
+            "predicted_confidence_pct": 98.64,
+            "true_label_probability_pct": 1.24
+        },
+        {
+            "test_index": 3206,
+            "true_label": 8,
+            "predicted_label": 3,
+            "predicted_confidence_pct": 98.55,
+            "true_label_probability_pct": 0.23
+        },
+        {
+            "test_index": 445,
+            "true_label": 6,
+            "predicted_label": 0,
+            "predicted_confidence_pct": 98.09,
+            "true_label_probability_pct": 0.55
+        },
+        {
+            "test_index": 4571,
+            "true_label": 6,
+            "predicted_label": 2,
+            "predicted_confidence_pct": 98.04,
+            "true_label_probability_pct": 0.74
+        }
+    ]
+}

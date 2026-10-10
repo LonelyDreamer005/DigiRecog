@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Handwritten Digit Recognition | 5-Finger Air Canvas, Softmax & CNN</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/style.css">
+
+    <!-- MediaPipe Hands & Camera Utils for In-Browser 5-Finger Air Canvas -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+</head>
+<body>
+    <!-- Top Navigation Header -->
+    <header class="app-header">
+        <div class="header-container">
+            <div class="logo-area">
+                <div class="logo-badge">🖐️ 0–9</div>
+                <div>
+                    <h1 class="app-title">5-Finger Air Canvas Digit Recognition</h1>
+                    <p class="app-subtitle">Real-Time In-Air Gesture Drawing, Softmax Baseline & CNN Deep Learning</p>
+                </div>
+            </div>
+            <div class="header-pills">
+                <span class="pill pill-blue"><span class="dot"></span> Softmax Baseline: 91.88%</span>
+                <span class="pill pill-green"><span class="dot green"></span> CNN Model: 99.01%</span>
+            </div>
+        </div>
+
+        <!-- Tab Navigation Bar -->
+        <nav class="nav-tabs">
+            <button class="tab-btn active" data-tab="studio-tab">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                Air Canvas & Studio
+            </button>
+            <button class="tab-btn" data-tab="comparison-tab">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
+                Model Comparison & Errors
+            </button>
+            <button class="tab-btn" data-tab="robustness-tab">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                Robustness Benchmark
+            </button>
+            <button class="tab-btn" data-tab="viva-tab">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                Viva Defense Guide
+            </button>
+        </nav>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="main-container">
+
+        <!-- TAB 1: STUDIO / AIR CANVAS -->
+        <section id="studio-tab" class="tab-content active">
+            <div class="model-select-bar">
+                <span class="label">Inference Mode:</span>
+                <div class="radio-group">
+                    <label class="radio-label">
+                        <input type="radio" name="model_choice" value="both" checked>
+                        <span>Compare Both Side-by-Side</span>
+                    </label>
+                    <label class="radio-label">
+                        <input type="radio" name="model_choice" value="softmax">
+                        <span>Softmax Baseline (7,850 params)</span>
+                    </label>
+                    <label class="radio-label">
+                        <input type="radio" name="model_choice" value="cnn">
+                        <span>CNN Deep Learning (225k params)</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="studio-grid">
+                <!-- Left Input Panel -->
+                <div class="card input-card">
+                    <div class="card-header">
+                        <h2>Input Source</h2>
+                        <div class="sub-nav">
+                            <button class="sub-tab-btn active" data-input="air-canvas">🖐️ 5-Finger Air Canvas</button>
+                            <button class="sub-tab-btn" data-input="canvas">✍️ Mouse/Touch Canvas</button>
+                            <button class="sub-tab-btn" data-input="upload">📁 Image Upload</button>
+                        </div>
+                    </div>
+
+                    <!-- Input Mode 1: 5-FINGER AIR CANVAS (PRIMARY) -->
+                    <div id="air-canvas-input-view" class="input-view-panel active">
+                        <div class="air-canvas-container">
+                            <video id="airVideo" autoplay playsinline muted></video>
+                            <canvas id="airDrawCanvas" width="480" height="360"></canvas>
+                            <div class="air-gesture-badge" id="airGestureBadge">
+                                <span class="gesture-icon">✋</span>
+                                <span class="gesture-text" id="airGestureText">Click Start Air Canvas</span>
+                            </div>
+                        </div>
+
+                        <div class="gesture-guide-bar">
+                            <div class="gesture-chip"><span class="chip-icon">☝️</span> <strong>1 Finger:</strong> Draw</div>
+                            <div class="gesture-chip"><span class="chip-icon">✌️</span> <strong>2 Fingers:</strong> Hover (Lift Pen)</div>
+                            <div class="gesture-chip"><span class="chip-icon">✋</span> <strong>5 Fingers:</strong> Clear</div>
+                            <div class="gesture-chip"><span class="chip-icon">✊</span> <strong>Fist:</strong> Predict</div>
+                        </div>
+
+                        <div class="canvas-controls">
+                            <button id="toggleAirCameraBtn" class="btn btn-primary">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+                                Start Air Camera
+                            </button>
+                            <button id="predictAirBtn" class="btn btn-success" disabled>
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                                Recognize Air Drawing
+                            </button>
+                            <button id="clearAirBtn" class="btn btn-secondary">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                                Clear
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Input Mode 2: Mouse/Touch Drawing Canvas -->
+                    <div id="canvas-input-view" class="input-view-panel">
+                        <div class="canvas-wrapper">
+                            <canvas id="drawCanvas" width="280" height="280"></canvas>
+                        </div>
+                        <div class="canvas-controls">
+                            <button id="clearCanvasBtn" class="btn btn-secondary">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                                Clear Canvas
+                            </button>
+                            <button id="predictCanvasBtn" class="btn btn-primary">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                                Recognize Digit
+                            </button>
+                        </div>
+                        <p class="hint">Draw any single digit (0–9) centered on the canvas.</p>
+                    </div>
+
+                    <!-- Input Mode 3: File Upload -->
+                    <div id="upload-input-view" class="input-view-panel">
+                        <div class="drop-zone" id="dropZone">
+                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                            <p><strong>Click to browse</strong> or drag & drop a digit image</p>
+                            <input type="file" id="fileInput" accept="image/*" style="display:none;">
+                            <img id="uploadPreview" class="upload-preview" style="display:none;" alt="Uploaded Preview">
+                        </div>
+                        <div class="canvas-controls">
+                            <button id="predictUploadBtn" class="btn btn-primary" disabled>Recognize Uploaded Image</button>
+                        </div>
+                    </div>
+
+                    <!-- Preprocessed MNIST-style 28x28 view -->
+                    <div class="preprocessed-preview-box">
+                        <div class="preprocessed-info">
+                            <h4>MNIST Preprocessed Input (28×28 Canvas)</h4>
+                            <p>Otsu Binarization + Auto-Polarity + 20×20 Centering</p>
+                        </div>
+                        <img id="preprocessedImg" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAYAAAByDd+UAAAAFUlEQVR42mNk+M9Qz0AEYBxVNKKjAAAS5w/xW9c5yAAAAABJRU5ErkJggg==" alt="28x28 Model Input">
+                    </div>
+                </div>
+
+                <!-- Right Prediction Results Panel -->
+                <div class="card results-card">
+                    <div class="card-header">
+                        <h2>Prediction & Confidence Analysis</h2>
+                        <span id="inferTimeBadge" class="pill pill-dark">Latency: ~0.6ms</span>
+                    </div>
+
+                    <!-- Dual Output Container -->
+                    <div id="dualResultsContainer" class="dual-results-grid">
+                        
+                        <!-- Softmax Output Card -->
+                        <div id="softmaxResultCard" class="model-result-box">
+                            <div class="result-header">
+                                <span class="model-badge softmax-badge">Softmax Regression</span>
+                                <span class="model-meta">Linear Baseline (7,850 weights)</span>
+                            </div>
+                            <div class="digit-display-area">
+                                <div class="predicted-digit-glow" id="softmaxDigit">-</div>
+                                <div class="digit-meta">
+                                    <span class="conf-title">Confidence</span>
+                                    <span class="conf-val" id="softmaxConf">0.0%</span>
+                                </div>
+                            </div>
+                            <div class="probabilities-container" id="softmaxProbs">
+                                <!-- Bars populated by JS -->
+                            </div>
+                        </div>
+
+                        <!-- CNN Output Card -->
+                        <div id="cnnResultCard" class="model-result-box">
+                            <div class="result-header">
+                                <span class="model-badge cnn-badge">CNN Deep Learning</span>
+                                <span class="model-meta">2 Conv + 2 MaxPool (225k weights)</span>
+                            </div>
+                            <div class="digit-display-area">
+                                <div class="predicted-digit-glow green-glow" id="cnnDigit">-</div>
+                                <div class="digit-meta">
+                                    <span class="conf-title">Confidence</span>
+                                    <span class="conf-val green-text" id="cnnConf">0.0%</span>
+                                </div>
+                            </div>
+                            <div class="probabilities-container" id="cnnProbs">
+                                <!-- Bars populated by JS -->
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 2: MODEL COMPARISON & ERRORS -->
+        <section id="comparison-tab" class="tab-content">
+            <div class="metrics-grid">
+                <div class="card metric-stat-card">
+                    <span class="stat-label">Softmax Test Accuracy</span>
+                    <span class="stat-value text-blue">91.88%</span>
+                    <span class="stat-sub">Linear mapping (784 &times; 10)</span>
+                </div>
+                <div class="card metric-stat-card">
+                    <span class="stat-label">CNN Test Accuracy</span>
+                    <span class="stat-value text-green">99.01%</span>
+                    <span class="stat-sub">Spatial convolutions + Pooling</span>
+                </div>
+                <div class="card metric-stat-card">
+                    <span class="stat-label">Accuracy Gain (&Delta;)</span>
+                    <span class="stat-value text-purple">+7.13%</span>
+                    <span class="stat-sub">Reduces error from 8.12% to 0.99%</span>
+                </div>
+                <div class="card metric-stat-card">
+                    <span class="stat-label">Shift Invariance Delta</span>
+                    <span class="stat-value text-orange">+50.45%</span>
+                    <span class="stat-sub">CNN 84.70% vs Softmax 34.25%</span>
+                </div>
+            </div>
+
+            <div class="chart-cards-grid">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Side-by-Side Confusion Matrices</h2>
+                        <span class="pill pill-dark">10,000 Test Images</span>
+                    </div>
+                    <div class="chart-img-wrapper">
+                        <img src="/outputs/confusion_matrices.png" alt="Confusion Matrices" class="chart-img">
+                    </div>
+                    <p class="chart-caption">Softmax shows inter-class confusion on similar stroke profiles (4 vs 9, 3 vs 5), whereas CNN produces an ultra-sharp diagonal.</p>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Training & Loss Curves (Softmax)</h2>
+                        <span class="pill pill-dark">SGD (lr=0.1, 10 Epochs)</span>
+                    </div>
+                    <div class="chart-img-wrapper">
+                        <img src="/outputs/training_curves.png" alt="Training Curves" class="chart-img">
+                    </div>
+                    <p class="chart-caption">Smooth convergence without overfitting; loss plateaus around ~0.25 on validation set.</p>
+                </div>
+            </div>
+
+            <div class="card" style="margin-top: 1.5rem;">
+                <div class="card-header">
+                    <h2>Error Analysis: Misclassified Test Samples (Softmax Baseline)</h2>
+                    <span class="pill pill-blue">812 Total Errors / 10,000 Test Images (8.12% Error Rate)</span>
+                </div>
+                <div class="chart-img-wrapper">
+                    <img src="/outputs/misclassified_samples.png" alt="Misclassified Samples" class="chart-img">
+                </div>
+                <p class="chart-caption">Examples of ambiguous strokes, unusual handwriting slants, and overlapping loops that confuse the linear Softmax model.</p>
+            </div>
+        </section>
+
+        <!-- TAB 3: ROBUSTNESS ANALYSIS -->
+        <section id="robustness-tab" class="tab-content">
+            <div class="card">
+                <div class="card-header">
+                    <h2>Robustness Evaluation (N=2,000 MNIST Test Samples, Seed=42)</h2>
+                    <span class="pill pill-blue">Measured Benchmark</span>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Distortion Condition</th>
+                                <th>Real-World Simulation</th>
+                                <th>Softmax Baseline</th>
+                                <th>CNN Model</th>
+                                <th>Performance Gap</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>1. Clean Original</strong></td>
+                                <td>Ideal baseline input</td>
+                                <td class="bold-text">91.40%</td>
+                                <td class="bold-text text-green">99.20%</td>
+                                <td><span class="badge-diff">+7.80%</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>2. Gaussian Noise (&sigma;=0.25)</strong></td>
+                                <td>Camera sensor grain & low light</td>
+                                <td class="bold-text">85.55%</td>
+                                <td class="bold-text text-green">98.20%</td>
+                                <td><span class="badge-diff">+12.65%</span></td>
+                            </tr>
+                            <tr class="highlight-row">
+                                <td><strong>3. Shift / Translation (&plusmn;2px)</strong></td>
+                                <td>Off-center drawing or imperfect framing</td>
+                                <td class="bold-text text-red">34.25%</td>
+                                <td class="bold-text text-green">84.70%</td>
+                                <td><span class="badge-diff badge-super">+50.45%</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>4. Rotation (15&deg;)</strong></td>
+                                <td>Tilted paper or hand slant</td>
+                                <td class="bold-text">82.85%</td>
+                                <td class="bold-text text-green">97.30%</td>
+                                <td><span class="badge-diff">+14.45%</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>5. Gaussian Blur (3&times;3)</strong></td>
+                                <td>Out-of-focus camera lens</td>
+                                <td class="bold-text">91.60%</td>
+                                <td class="bold-text text-green">99.00%</td>
+                                <td><span class="badge-diff">+7.40%</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="chart-img-wrapper" style="margin-top: 2rem;">
+                    <img src="/outputs/model_comparison.png" alt="Robustness Bar Chart" class="chart-img">
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 4: VIVA & THEORY GUIDE -->
+        <section id="viva-tab" class="tab-content">
+            <div class="card">
+                <div class="card-header">
+                    <h2>Project Presentation Notes & Viva Preparation</h2>
+                    <span class="pill pill-purple">Deep Learning CBP Course</span>
+                </div>
+
+                <div class="viva-list">
+                    <div class="viva-item">
+                        <h3>Q1: What is the mathematical formulation of Softmax Regression?</h3>
+                        <p><strong>Answer:</strong> Softmax Regression computes linear logits $z_k = \mathbf{w}_k^T \mathbf{x} + b_k$ for each digit class $k \in \{0, \dots, 9\}$. The Softmax function normalizes logits into class probabilities:</p>
+                        <div class="math-box">
+                            $$P(y = k \mid \mathbf{x}) = \frac{e^{z_k}}{\sum_{j=0}^{9} e^{z_j}}$$
+                        </div>
+                    </div>
+
+                    <div class="viva-item">
+                        <h3>Q2: Why does Softmax accuracy drastically collapse under a 2-pixel shift (from 91.4% to 34.25%)?</h3>
+                        <p><strong>Answer:</strong> Softmax Regression treats every pixel in the $28 \times 28$ grid as an independent coordinate without spatial connectivity. It learns a single fixed weight for each coordinate $(i, j)$. Shifting by 2 pixels moves stroke pixels onto weights for background or other classes. In contrast, CNN utilizes convolutional weight sharing and Max Pooling, conferring spatial translation invariance ($84.70\%$ shifted accuracy).</p>
+                    </div>
+
+                    <div class="viva-item">
+                        <h3>Q3: Why is Otsu binarization and aspect-ratio bounding-box centering critical for digit recognition?</h3>
+                        <p><strong>Answer:</strong> Real-world captures differ from MNIST (ink polarity, background lighting, varied drawn sizes). The preprocessing pipeline applies Otsu thresholding, extracts the stroke bounding box, scales the digit preserving aspect ratio to $20 \times 20$, and centers it on a $28 \times 28$ black canvas.</p>
+                    </div>
+
+                    <div class="viva-item">
+                        <h3>Q4: What is the loss function used and why?</h3>
+                        <p><strong>Answer:</strong> <strong>Sparse Categorical Cross-Entropy</strong>:
+                        $$L = -\sum_{i=1}^{N} \log P(y_i \mid \mathbf{x}_i)$$
+                        Using integer labels $\{0, \dots, 9\}$ rather than one-hot vectors saves memory and speeds up gradient computation.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <script src="/static/js/main.js"></script>
+</body>
+</html>
